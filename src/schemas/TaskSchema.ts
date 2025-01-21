@@ -10,19 +10,29 @@ export const CreateTaskSchema = z.object({
 });
 
 // Schema for updating a task
-export const UpdateTaskSchema = z.object({
-  title: z
-    .string()
-    .min(1, 'Title is required')
-    .max(100, 'Title is too long')
-    .optional(),
-  description: z
-    .string()
-    .min(1, 'Description is required')
-    .max(500, 'Description is too long')
-    .optional(),
-  completed: z.boolean().optional(),
-});
+export const UpdateTaskSchema = z
+  .object({
+    title: z
+      .string()
+      .min(1, 'Title is required')
+      .max(100, 'Title is too long')
+      .optional(),
+    description: z
+      .string()
+      .min(1, 'Description is required')
+      .max(500, 'Description is too long')
+      .optional(),
+    completed: z.boolean().optional(),
+  })
+  .refine(
+    (v) => {
+      return !(!v.completed && !v.description && !v.title);
+    },
+    {
+      message: 'need at least change one prop',
+      path: [''],
+    }
+  );
 
 // Schema for task ID (used in params)
 export const TaskIdSchema = z.object({
