@@ -26,7 +26,11 @@ export const UpdateTaskSchema = z
   })
   .refine(
     (v) => {
-      return !(!v.completed && !v.description && !v.title);
+      return !(
+        typeof v.completed === 'undefined' &&
+        !v.description &&
+        !v.title
+      );
     },
     {
       message: 'need at least change one prop',

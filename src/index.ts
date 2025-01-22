@@ -1,8 +1,10 @@
 import 'reflect-metadata'; // Required for TypeORM
 import express, { Request, Response } from 'express';
 import { DataSource } from 'typeorm';
+import { User } from './entities/User';
 import { Task } from './entities/Task'; // We'll create this next
 import taskRoutes from './routes/TaskRoutes';
+import userRoutes from './routes/UserRoutes';
 
 export const AppDataSource = new DataSource({
   type: 'mysql',
@@ -13,7 +15,7 @@ export const AppDataSource = new DataSource({
   database: 'mysql', // Replace with your database name
   synchronize: true, // Automatically create database tables (for development only)
   logging: false,
-  entities: [Task], // Add your entities here
+  entities: [User, Task], // Add your entities here
   subscribers: [],
   migrations: [],
 });
@@ -27,7 +29,9 @@ app.get('/', (req: Request, res: Response) => {
   res.send('Welcome to the Task Manager API!');
 });
 
-app.use('/api', taskRoutes);
+// ROUTES
+app.use('/api/user', userRoutes);
+app.use('/api/task/', taskRoutes);
 
 // Connect to the database and start the server
 AppDataSource.initialize()

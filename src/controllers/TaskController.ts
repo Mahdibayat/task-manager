@@ -5,6 +5,11 @@ import {
   UpdateTaskSchema,
   TaskIdSchema,
 } from '../schemas/TaskSchema';
+import {
+  sendSuccessResponse,
+  sendErrorResponse,
+  sendValidationErrorResponse,
+} from '../utils/apiResponse';
 
 export const getAllTasks = async (
   req: Request,
@@ -12,9 +17,9 @@ export const getAllTasks = async (
 ): Promise<void> => {
   try {
     const tasks = await getTaskRepository().find();
-    res.status(200).json(tasks); // Use res.json() to send the response
+    sendSuccessResponse(res, 'Tasks fetched successfully', tasks);
   } catch (error) {
-    res.status(500).json({ message: 'An error occurred', error });
+    sendErrorResponse(res, 'An error occurred while fetching tasks', 500);
   }
 };
 
@@ -22,54 +27,61 @@ export const createTask = async (
   req: Request,
   res: Response
 ): Promise<void> => {
-  // Validate the request body
-  const validationResult = CreateTaskSchema.safeParse(req.body);
-  if (!validationResult.success) {
-    res.status(400).json({ errors: validationResult.error.errors });
-    return;
-  }
+  try {
+    // Validate the request body
+    const validationResult = CreateTaskSchema.safeParse(req.body);
+    if (!validationResult.success) {
+      sendValidationErrorResponse(res, validationResult.error);
+      return;
+    }
 
-  // If validation passes, create the task
-  const { title, description } = validationResult.data;
-  const task = getTaskRepository().create({ title, description });
-  await getTaskRepository().save(task);
-  res.status(201).json(task);
+    // If validation passes, create the task
+    const { title, description } = validationResult.data;
+    const task = getTaskRepository().create({ title, description });
+    await getTaskRepository().save(task);
+    sendSuccessResponse(res, 'Task created successfully', task, 201);
+  } catch (error) {
+    sendErrorResponse(res, 'An error occurred while creating the task', 500);
+  }
 };
 
 export const updateTask = async (
   req: Request,
   res: Response
 ): Promise<void> => {
-  // Validate the request params
-  const paramsValidation = TaskIdSchema.safeParse(req.params);
-  if (!paramsValidation.success) {
-    res.status(400).json({ errors: paramsValidation.error.errors });
-    return;
+  try {
+    // Validate the request params
+    const paramsValidation = TaskIdSchema.safeParse(req.params);
+    if (!paramsValidation.success) {
+      sendValidationErrorResponse(res, paramsValidation.error);
+      return;
+    }
+
+    // Validate the request body
+    const bodyValidation = UpdateTaskSchema.safeParse(req.body);
+    if (!bodyValidation.success) {
+      sendValidationErrorResponse(res, bodyValidation.error);
+      return;
+    }
+
+    // If validation passes, update the task
+    const { id } = paramsValidation.data;
+    const { title, description, completed } = bodyValidation.data;
+    const task = await getTaskRepository().findOneBy({ id });
+    if (!task) {
+      sendErrorResponse(res, 'Task not found', 404);
+      return;
+    }
+
+    if (title) task.title = title;
+    if (description) task.description = description;
+    if (completed !== undefined) task.completed = completed;
+
+    await getTaskRepository().save(task);
+    sendSuccessResponse(res, 'Task updated successfully', task);
+  } catch (error) {
+    sendErrorResponse(res, 'An error occurred while updating the task', 500);
   }
-
-  // Validate the request body
-  const bodyValidation = UpdateTaskSchema.safeParse(req.body);
-  if (!bodyValidation.success) {
-    res.status(400).json({ errors: bodyValidation.error.errors });
-    return;
-  }
-
-  // If validation passes, update the task
-  const { id } = paramsValidation.data;
-  const { title, description, completed } = bodyValidation.data;
-  const task = await getTaskRepository().findOneBy({ id });
-  if (!task) {
-    res.status(404).json({ message: 'Task not found' });
-    return;
-  }
-
-  if (title) task.title = title;
-  if (description) task.description = description;
-  if (completed !== undefined) task.completed = completed;
-
-  await getTaskRepository().save(task);
-  res.status(200).json(task);
-  return;
 };
 
 export const deleteTask = async (
@@ -77,26 +89,24 @@ export const deleteTask = async (
   res: Response
 ): Promise<void> => {
   try {
-    const { id } = req.params;
-
-    // Validate the ID
-    const taskId = parseInt(id, 10);
-    if (isNaN(taskId)) {
-      res.status(400).json({ message: 'Invalid task ID' });
+    // Validate the request params
+    const validationResult = TaskIdSchema.safeParse(req.params);
+    if (!validationResult.success) {
+      sendValidationErrorResponse(res, validationResult.error);
       return;
     }
 
-    // Find the task
-    const task = await getTaskRepository().findOneBy({ id: taskId });
+    // If validation passes, delete the task
+    const { id } = validationResult.data;
+    const task = await getTaskRepository().findOneBy({ id });
     if (!task) {
-      res.status(404).json({ message: 'Task not found' });
+      sendErrorResponse(res, 'Task not found', 404);
       return;
     }
 
-    // Delete the task
     await getTaskRepository().remove(task);
-    res.status(204).send(); // No content response for successful deletion
+    sendSuccessResponse(res, 'Task deleted successfully', null, 204);
   } catch (error) {
-    res.status(500).json({ message: 'An error occurred', error });
+    sendErrorResponse(res, 'An error occurred while deleting the task', 500);
   }
 };
