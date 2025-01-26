@@ -72,7 +72,7 @@ export const getUserTasks = async (
   res: Response
 ): Promise<void> => {
   try {
-    const userId = req.user?.userId; // Assuming you have middleware to attach the user ID to the request
+    const userId = (req as any).user?.userId; // Assuming you have middleware to attach the user ID to the request
     const user = await getUserRepository().findOne({
       where: { id: userId },
       relations: ['tasks'], // Load the tasks associated with the user
