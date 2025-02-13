@@ -12,7 +12,7 @@ export const AppDataSource = new DataSource({
   port: 3306,
   username: 'root', // Replace with your MySQL username
   password: '', // Replace with your MySQL password
-  database: 'mysql', // Replace with your database name
+  database: 'test', // Replace with your database name
   synchronize: true, // Automatically create database tables (for development only)
   logging: false,
   entities: [User, Task], // Add your entities here
