@@ -1,27 +1,29 @@
-import 'reflect-metadata'; // Required for TypeORM
+import 'reflect-metadata';
+import 'dotenv/config';
 import express, { Request, Response } from 'express';
 import { DataSource } from 'typeorm';
 import { User } from './entities/User';
-import { Task } from './entities/Task'; // We'll create this next
+import { Task } from './entities/Task';
 import taskRoutes from './routes/TaskRoutes';
 import userRoutes from './routes/UserRoutes';
+import { appEnv } from './utils/constant';
 
 export const AppDataSource = new DataSource({
-  type: 'mysql',
-  host: 'localhost',
-  port: 3306,
-  username: 'root', // Replace with your MySQL username
-  password: '', // Replace with your MySQL password
-  database: 'test', // Replace with your database name
-  synchronize: true, // Automatically create database tables (for development only)
-  logging: false,
+  type: 'mysql', // Database type
+  host: appEnv.host, // Database host
+  port: appEnv.db_port, // Database port
+  username: appEnv.db_username, // Database username
+  password: appEnv.db_pass, // Database password
+  database: appEnv.db_name, // Database name
+  synchronize: true, // Automatically synchronize database schema (for development only)
+  logging: false, // Disable logging (or set to true for debugging)
   entities: [User, Task], // Add your entities here
-  subscribers: [],
-  migrations: [],
+  subscribers: [], // Add subscribers if needed
+  migrations: [], // Add migrations if needed
 });
 
 const app = express();
-const port = 3000;
+const port = appEnv.app_port || 3000;
 
 app.use(express.json());
 

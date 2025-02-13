@@ -3,6 +3,7 @@ import { getUserRepository } from '../repositories/UserRepository';
 import { sendSuccessResponse, sendErrorResponse } from '../utils/apiResponse';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
+import { appEnv } from '../utils/constant';
 
 // Register a new user
 export const registerUser = async (
@@ -56,7 +57,7 @@ export const loginUser = async (req: Request, res: Response): Promise<void> => {
     }
 
     // Generate a JWT token
-    const token = jwt.sign({ userId: user.id }, 'your-secret-key', {
+    const token = jwt.sign({ userId: user.id }, appEnv.salt, {
       expiresIn: '1h',
     });
 
