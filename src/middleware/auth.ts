@@ -1,6 +1,5 @@
 import { appEnv } from '../utils/constant';
-
-const jwt = require('jsonwebtoken');
+import { JwtPayload, verify } from 'jsonwebtoken';
 
 export const auth = (req: any, res: any, next: any) => {
   const token = req.header('Authorization')?.replace('Bearer ', '');
@@ -10,12 +9,10 @@ export const auth = (req: any, res: any, next: any) => {
   }
 
   try {
-    const decoded = jwt.verify(token, appEnv.salt);
-    req.userId = decoded.userId; // Attach user ID to the request object
+    const decoded = verify(token, appEnv.salt);
+    req.userId = (decoded as JwtPayload).userId;
     next();
   } catch (error) {
-    res.status(400).send('Invalid token.');
+    res.status(401).send('Invalid token.');
   }
 };
-
-module.exports = auth;
