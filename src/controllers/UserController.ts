@@ -4,6 +4,7 @@ import { sendSuccessResponse, sendErrorResponse } from '../utils/apiResponse';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { appEnv } from '../utils/constant';
+import { getTaskRepository } from '../repositories/TaskRepository';
 
 // Register a new user
 export const registerUser = async (
@@ -89,3 +90,14 @@ export const getUserTasks = async (
     sendErrorResponse(res, 'An error occurred while fetching tasks', 500);
   }
 };
+
+export async function getUsers(req: Request, res: Response) {
+  try {
+    const users = await getUserRepository().find({
+      relations: ['tasks'],
+    });
+    sendSuccessResponse(res, 'all users', users);
+  } catch (error) {
+    console.error({ error });
+  }
+}
