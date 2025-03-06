@@ -1,13 +1,14 @@
 import { Request, Response } from 'express';
 import { getTaskRepository } from '../repositories/TaskRepository';
+import { getUserRepository } from '../repositories/UserRepository';
 import {
   CreateTaskSchema,
-  UpdateTaskSchema,
   TaskIdSchema,
+  UpdateTaskSchema,
 } from '../schemas/TaskSchema';
 import {
-  sendSuccessResponse,
   sendErrorResponse,
+  sendSuccessResponse,
   sendValidationErrorResponse,
 } from '../utils/apiResponse';
 
@@ -36,8 +37,17 @@ export const createTask = async (
     }
 
     // If validation passes, create the task
-    const { title, description } = validationResult.data;
-    const task = getTaskRepository().create({ title, description });
+    const { title, description, userId } = validationResult.data;
+
+    const user = userId
+      ? await getUserRepository().findOneBy({ id: userId })
+      : undefined;
+
+    const task = getTaskRepository().create({
+      title,
+      description,
+      user: user ? user : undefined,
+    });
     await getTaskRepository().save(task);
     sendSuccessResponse(res, 'Task created successfully', task, 201);
   } catch (error) {

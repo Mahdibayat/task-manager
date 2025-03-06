@@ -7,6 +7,7 @@ export const CreateTaskSchema = z.object({
     .string()
     .min(1, 'Description is required')
     .max(500, 'Description is too long'),
+  userId: z.number().optional(),
 });
 
 // Schema for updating a task
@@ -43,7 +44,13 @@ export const TaskIdSchema = z.object({
   id: z.string().regex(/^\d+$/, 'ID must be a number').transform(Number),
 });
 
+export const AssignTaskToUserSchema = z.object({
+  user_id: z.number(),
+  task_id: z.number(),
+});
+
 // Type inference for TypeScript
 export type CreateTaskSchema = z.infer<typeof CreateTaskSchema>;
 export type UpdateTaskSchema = z.infer<typeof UpdateTaskSchema>;
 export type TaskIdSchema = z.infer<typeof TaskIdSchema>;
+export type AssignTaskToUserSchema = z.infer<typeof AssignTaskToUserSchema>;

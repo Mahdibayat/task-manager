@@ -4,6 +4,7 @@ import {
   loginUser,
   getUserTasks,
   getUsers,
+  assignTaskToUser,
 } from '../controllers/UserController';
 import { auth } from '../middleware/auth';
 
@@ -13,5 +14,6 @@ router.post('/register', registerUser);
 router.post('/login', loginUser);
 router.get('/tasks', auth, getUserTasks);
 router.get('/all', auth, getUsers);
+router.post('/assignTask', auth, assignTaskToUser);
 
 export default router;

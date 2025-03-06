@@ -1,10 +1,15 @@
 import { Request, Response } from 'express';
 import { getUserRepository } from '../repositories/UserRepository';
-import { sendSuccessResponse, sendErrorResponse } from '../utils/apiResponse';
+import {
+  sendSuccessResponse,
+  sendErrorResponse,
+  sendValidationErrorResponse,
+} from '../utils/apiResponse';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { appEnv } from '../utils/constant';
 import { getTaskRepository } from '../repositories/TaskRepository';
+import { AssignTaskToUserSchema } from '../schemas/TaskSchema';
 
 // Register a new user
 export const registerUser = async (
@@ -99,5 +104,51 @@ export async function getUsers(req: Request, res: Response) {
     sendSuccessResponse(res, 'all users', users);
   } catch (error) {
     console.error({ error });
+  }
+}
+
+export async function assignTaskToUser(req: Request, res: Response) {
+  const validBody = AssignTaskToUserSchema.safeParse(req.body);
+  if (!validBody.success) {
+    sendValidationErrorResponse(res, validBody.error);
+    return;
+  }
+
+  const { task_id, user_id } = validBody.data;
+
+  try {
+    const taskRepository = getTaskRepository();
+    const task = await taskRepository.findOne({
+      where: { id: task_id },
+      relations: ['user'], // Include the related user entity
+    });
+
+    if (!task) {
+      sendErrorResponse(res, 'Task not found', 404);
+      return;
+    }
+
+    const userRepository = getUserRepository();
+    const user = await userRepository.findOne({
+      where: { id: user_id },
+    });
+
+    if (!user) {
+      sendErrorResponse(res, 'User not found', 404);
+      return;
+    }
+
+    // Check if the task is already assigned to the user
+    if (task.user && task.user.id === user.id) {
+      sendErrorResponse(res, 'This user already has this task', 400);
+      return;
+    }
+
+    task.user = user;
+    await taskRepository.save(task);
+
+    sendSuccessResponse(res, 'Task assigned successfully', task);
+  } catch (error) {
+    sendErrorResponse(res, 'An error occurred while fetching tasks', 500);
   }
 }
