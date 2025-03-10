@@ -1,14 +1,3 @@
-@property --bg-color {
-  syntax: '<color>';
-  inherits: true;
-  initial-value: #ededed;
-}
-@property --text-color {
-  syntax: '<color>';
-  inherits: true;
-  initial-value: #252525;
-}
-
 * {
   box-sizing: border-box;
 }

@@ -1,0 +1,20 @@
+@property --bg-color {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: #ededed;
+}
+@property --text-color {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: #252525;
+}
+@property --primary-color {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: hsl(215, 63%, 50%);
+}
+@property --primary-hover-color {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: hsla(215, 63%, 40%, 0.5);
+}
